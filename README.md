@@ -36,3 +36,6 @@ Présentation de 5 minutes du site devant l'ensemble de la promo. Évaluation pa
 ## Livrables
 
 Un lien vers un projet GITHUB qui contient le code Python et HTML/CSS du site et un readme qui explique la base mise en place. La base de données doit être créée sur MONGODB ATLAS.
+
+
+# Base de données

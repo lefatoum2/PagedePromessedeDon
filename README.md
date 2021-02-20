@@ -37,5 +37,10 @@ Présentation de 5 minutes du site devant l'ensemble de la promo. Évaluation pa
 
 Un lien vers un projet GITHUB qui contient le code Python et HTML/CSS du site et un readme qui explique la base mise en place. La base de données doit être créée sur MONGODB ATLAS.
 
+# Documentation 
+https://flask.palletsprojects.com/en/1.1.x/patterns/wtforms/
+https://stackoverflow.com/questions/38402850/validate-that-a-wtforms-booleanfield-is-checked
+https://www.programcreek.com/python/example/82254/wtforms.IntegerField
+https://wtforms.readthedocs.io/en/2.3.x/fields/
 
 # Base de données

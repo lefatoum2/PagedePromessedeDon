@@ -44,3 +44,6 @@ https://www.programcreek.com/python/example/82254/wtforms.IntegerField
 https://wtforms.readthedocs.io/en/2.3.x/fields/
 
 ## Base de données
+
+Pour ce projet, il a été créé une base de donnée et une collection dons où j'ai pu stocker les noms et prénoms , les emails et les dons promis. 
+Pour créer une session, il aurait fallu créer une deuxième collection qui aurait pour nom , utilisateur. 

@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<table>
+    <caption> Dons de l'année</caption>
+    <tr>
+        <th scope="col">First Name</th>
+        <th scope="col">Last Name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Gift</th>
+    </tr>
+    {% for don in res %}
+    <tr>
+        <td> {{ don.name}} </td>
+        <td> {{ don.name_last}} </td>
+        <td> {{ don.email}} </td>
+        <td> {{ don.money }} </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -6,9 +6,10 @@ from Flask_WTforms.model import RegForm
 from flask_bootstrap import Bootstrap
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
-# from passlib.hash import sha256_crypt
+from passlib.hash import sha256_crypt
 from functools import wraps
 from Version2.model import *
+import bcrypt
 
 app = Flask(__name__)
 
@@ -17,8 +18,9 @@ app = Flask(__name__)
 client = MongoClient("mongodb://127.0.0.1:27017")
 db = client.ORE
 
-# Connection à la collection
+# Connection à la collection des dons et des utilisateurs
 collection1 = db.dons
+records = db.users
 
 
 # Page d'acceuil
@@ -26,6 +28,19 @@ collection1 = db.dons
 @app.route("/accueil")
 def accueil():
     return render_template('accueil.html')
+
+
+# Vérification si toujours connecté
+def is_logged_in(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'email' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('Unauthorized, Please login', 'danger')
+            return redirect(url_for('login'))
+
+    return wrap
 
 
 # Formulaire
@@ -50,7 +65,9 @@ def formulaire():
 
 
 # Affichage des dons
+
 @app.route("/dons")
+@is_logged_in
 def dons():
     res = collection1.find()
     return render_template('dons.html', res=res)
@@ -59,96 +76,78 @@ def dons():
 # Enregistrement Utilisateur
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegisterForm(request.form)
-    if request.method == 'POST' and form.validate():
-        name = form.name.data
-        email = form.email.data
-        username = form.username.data
-        """
-        password = sha256_crypt.encrypt(str(form.password.data))
 
-         # Create cursor
-        cur = mysql.connection.cursor()
+    if "email" in session:
+        return redirect(url_for("dons"))
+    if request.method == "POST":
+        user = request.form.get("fullname")
+        email = request.form.get("email")
 
-        # Execute query
-        cur.execute("INSERT INTO users(name, email, username, password) VALUES(%s, %s, %s, %s)",
-                    (name, email, username, password))
+        password1 = request.form.get("password1")
+        password2 = request.form.get("password2")
 
-        # Commit to DB
-        mysql.connection.commit()
+        user_found = records.find_one({"name": user})
+        email_found = records.find_one({"email": email})
+        if user_found:
+            message = 'There already is a user by that name'
+            return render_template('register.html', message=message)
+        if email_found:
+            message = 'This email already exists in database'
+            return render_template('register.html', message=message)
+        if password1 != password2:
+            message = 'Passwords should match!'
+            return render_template('register.html', message=message)
+        else:
+            hashed = bcrypt.hashpw(password2.encode('utf-8'), bcrypt.gensalt())
+            user_input = {'name': user, 'email': email, 'password': hashed}
+            records.insert_one(user_input)
 
-        # Close connection
-        cur.close()
+            user_data = records.find_one({"email": email})
+            new_email = user_data['email']
 
-        flash('You are now registered and can log in', 'success')
-
-        return redirect(url_for('login'))
-    return render_template('register.html', form=form)
-"""
+            return render_template('login.html', email=new_email)
+    return render_template('register.html')
 
 
 # Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        # Get Form Fields
-        username = request.form['username']
-        password_candidate = request.form['password']
+    message = 'Please login to your account'
+    if "email" in session:
+        return redirect(url_for("dons"))
 
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-"""
-        # Create cursor
-        cur = mysql.connection.cursor()
+        email_found = records.find_one({"email": email})
+        if email_found:
+            email_val = email_found['email']
+            passwordcheck = email_found['password']
 
-        # Get user by username
-        result = cur.execute("SELECT * FROM users WHERE username = %s", [username])
-
-        if result > 0:
-            # Get stored hash
-            data = cur.fetchone()
-            password = data['password']
-
-            # Compare Passwords
-            if sha256_crypt.verify(password_candidate, password):
-                # Passed
-                session['logged_in'] = True
-                session['username'] = username
-
-                flash('You are now logged in', 'success')
-                return redirect(url_for('dashboard'))
+            if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
+                session["email"] = email_val
+                return redirect(url_for('dons'))
             else:
-                error = 'Invalid login'
-                return render_template('login.html', error=error)
-            # Close connection
-            cur.close()
+                if "email" in session:
+                    return redirect(url_for("dons"))
+                message = 'Wrong password'
+                return render_template('login.html', message=message)
         else:
-            error = 'Username not found'
-            return render_template('login.html', error=error)
-
-    return render_template('login.html')
-"""
-
-
-# Vérification si toujours connecté
-def is_logged_in(f):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        if 'logged_in' in session:
-            return f(*args, **kwargs)
-        else:
-            flash('Unauthorized, Please login', 'danger')
-            return redirect(url_for('login'))
-
-    return wrap
+            message = 'Email not found'
+            return render_template('login.html', message=message)
+    return render_template('login.html', message=message)
 
 
 # Déconnection
 @app.route('/logout')
 @is_logged_in
 def logout():
-    session.clear()
-    flash('You are now logged out', 'success')
-    return redirect(url_for('login'))
+    if "email" in session:
+        session.pop("email", None)
+        return render_template("accueil.html")
+    else:
+        return render_template('accueil.html')
 
 
 if __name__ == '__main__':

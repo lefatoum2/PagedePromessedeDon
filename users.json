@@ -1,0 +1,13 @@
+[{
+  "_id": {
+    "$oid": "604cdbd39bc6d4fdc4dd64f8"
+  },
+  "name": "lefatoum",
+  "email": "lefatoum@hotmail.fr",
+  "password": {
+    "$binary": {
+      "base64": "JDJiJDEyJDlSbjlGb1YwQ1gybjFMOS5NMWRDZGVsclF4ak1yaTc5V3pVT1JQOE1yaWlRb2laYjNYOUs2",
+      "subType": "00"
+    }
+  }
+}]

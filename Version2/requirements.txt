@@ -1,0 +1,4 @@
+Flask
+Pymongo
+Functools
+Bcrypt

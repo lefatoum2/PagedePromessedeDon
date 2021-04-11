@@ -49,6 +49,12 @@ Pour ce projet, il a été créé une base de donnée avec deux collections. La 
 
 ## Lancer l'application après clonage
 
+Avant le lancement , on s'assure d'avoir tous les modules nécessaires:
+
+```
+pip install -r requirements.txt
+```
+Puis :
 ```
 Python3 app.py
 

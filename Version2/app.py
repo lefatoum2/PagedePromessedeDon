@@ -1,14 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
-from bson import ObjectId
 from pymongo import MongoClient
-import os
-from Flask_WTforms.model import RegForm
-from flask_bootstrap import Bootstrap
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
-from passlib.hash import sha256_crypt
 from functools import wraps
-from Version2.model import *
+from version2.model import *
 import bcrypt
 
 app = Flask(__name__)
@@ -46,6 +39,7 @@ def is_logged_in(f):
 # Formulaire
 @app.route("/form", methods=['GET', 'POST'])
 def formulaire():
+    # On utilise la classe DonForm de model.py
     form = DonForm(request.form)
     if request.method == 'POST' and form.validate():
         name_first = form.name_first.data
@@ -54,13 +48,16 @@ def formulaire():
         money = form.money.data
         checkbox = form.checkbox.data
 
-        collection1.insert(
-            {"name": name_first, "name_last": name_last, "email": email, "money": money, "checkbox": checkbox})
+        # On enregistre que si les conditions générales des dons sont acceptés(True)
+        if checkbox:
+            # Insertion des données par la collection1(dons)
+            collection1.insert(
+                {"name": name_first, "name_last": name_last, "email": email, "money": money, "checkbox": checkbox})
 
-        flash('Thank You', 'success')
+            flash('Thank You', 'success')
 
-        return redirect(url_for('accueil'))
-
+            return redirect(url_for('accueil'))
+    # Si le formulaire n'est pas validé, on retourne à nouveau le formulaire
     return render_template('formulaire.html', form=form)
 
 
@@ -76,9 +73,10 @@ def dons():
 # Enregistrement Utilisateur
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-
+    # Si l'utilisateur est toujours connecté, on le retourne à la page de dons
     if "email" in session:
         return redirect(url_for("dons"))
+
     if request.method == "POST":
         user = request.form.get("fullname")
         email = request.form.get("email")
@@ -89,13 +87,13 @@ def register():
         user_found = records.find_one({"name": user})
         email_found = records.find_one({"email": email})
         if user_found:
-            message = 'There already is a user by that name'
+            message = 'Il y a déjà un utilisateur avec ce nom'
             return render_template('register.html', message=message)
         if email_found:
-            message = 'This email already exists in database'
+            message = 'Le mail existe déjà la base de données'
             return render_template('register.html', message=message)
         if password1 != password2:
-            message = 'Passwords should match!'
+            message = 'Les deux mots de passe ne correspondent pas!'
             return render_template('register.html', message=message)
         else:
             hashed = bcrypt.hashpw(password2.encode('utf-8'), bcrypt.gensalt())

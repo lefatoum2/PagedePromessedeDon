@@ -1,9 +1,11 @@
 
 
+
+
 {% extends 'layout.html' %}
 
 {% block body %}
-  <h1>Dons</h1>
+  <h1>Don</h1>
   {% from "includes/_formhelpers.html" import render_field %}
   <form method="POST" action="">
     <div class="form-group">
@@ -11,7 +13,7 @@
       {{ render_field(form.name_last, class_="form-control") }}
       {{ render_field(form.email, class_="form-control") }}
       {{ render_field(form.money, class_="form-control") }}
-       {{ form.hidden_tag() }}
+       {{ form.hidden_tag() }} J'accepte les conditions générales des dons
         {{ form.checkbox() }}
 
     </div>
